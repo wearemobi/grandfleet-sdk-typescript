@@ -1,6 +1,6 @@
 {
   "name": "@wearemobi/grandfleet-sdk",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "Official TypeScript SDK for Grandfleet by M.O.B.I.™ - Contract-Driven Sovereign Cloud & POS Infrastructure",
   "type": "module",
   "main": "./dist/index.cjs",
