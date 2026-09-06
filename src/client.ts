@@ -1,6 +1,10 @@
 import createClient, { Client } from 'openapi-fetch';
 import type { paths } from './generated/schema.js';
 import { ProblemDetailsError, ProblemDetails } from './utils/errors.js';
+import { AuthModule } from './modules/auth.js';
+import { PosModule } from './modules/pos.js';
+import { InventoryModule } from './modules/inventory.js';
+import { LedgerModule } from './modules/ledger.js';
 
 export interface GrandfleetClientOptions {
   baseUrl: string;
@@ -14,6 +18,11 @@ export class GrandfleetClient {
   public tenantId: string;
   private token?: string;
   public readonly raw: Client<paths>;
+
+  public readonly auth: AuthModule;
+  public readonly pos: PosModule;
+  public readonly inventory: InventoryModule;
+  public readonly ledger: LedgerModule;
 
   constructor(options: GrandfleetClientOptions) {
     this.baseUrl = options.baseUrl;
@@ -57,6 +66,11 @@ export class GrandfleetClient {
       baseUrl: this.baseUrl,
       fetch: customFetch,
     });
+
+    this.auth = new AuthModule(this);
+    this.pos = new PosModule(this);
+    this.inventory = new InventoryModule(this);
+    this.ledger = new LedgerModule(this);
   }
 
   public setAuthToken(token: string | undefined): void {
