@@ -1,0 +1,61 @@
+{
+  "name": "@wearemobi/grandfleet-sdk",
+  "version": "0.1.0",
+  "description": "Official TypeScript SDK for Grandfleet by M.O.B.I.™ - Contract-Driven Sovereign Cloud & POS Infrastructure",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "codegen": "npx openapi-typescript ../grandfleet/docs/api/openapi.yaml -o src/generated/schema.d.ts"
+  },
+  "keywords": [
+    "grandfleet",
+    "mobi",
+    "sdk",
+    "typescript",
+    "openapi",
+    "pos",
+    "ledger",
+    "sovereign-cloud"
+  ],
+  "author": "M.O.B.I.™ Labs <dev@wearemobi.com>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wearemobi/grandfleet-sdk-typescript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wearemobi/grandfleet-sdk-typescript/issues"
+  },
+  "homepage": "https://github.com/wearemobi/grandfleet-sdk-typescript#readme",
+  "dependencies": {
+    "openapi-fetch": "^0.13.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.6.0",
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  }
+}
