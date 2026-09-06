@@ -1,6 +1,7 @@
 {
-  "name": "@wearemobi/grandfleet-sdk",
+  "name": "@wearemobi/grandfleet",
   "version": "0.4.0",
+  "packageManager": "pnpm@11.21.0",
   "description": "Official TypeScript SDK for Grandfleet by M.O.B.I.™ - Contract-Driven Sovereign Cloud & POS Infrastructure",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -23,7 +24,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "codegen": "npx openapi-typescript ../grandfleet/docs/api/openapi.yaml -o src/generated/schema.d.ts"
+    "codegen": "pnpm dlx openapi-typescript ../grandfleet/docs/api/openapi.yaml -o src/generated/schema.d.ts"
   },
   "keywords": [
     "grandfleet",
