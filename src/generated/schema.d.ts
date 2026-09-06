@@ -4,6 +4,46 @@
  */
 
 export interface paths {
+    "/openapi.yaml": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieve Canonical OpenAPI Specification
+         * @description Returns the raw OpenAPI 3.1 YAML document. Ideal for Postman collection import or automated client SDK code generation.
+         */
+        get: operations["getOpenAPISpec"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/docs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Interactive Scalar API Reference UI
+         * @description Serves an ultra-fast, zero-dependency interactive API documentation viewer powered by Scalar.
+         */
+        get: operations["getDocsUI"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/healthz": {
         parameters: {
             query?: never;
@@ -13,7 +53,7 @@ export interface paths {
         };
         /**
          * Liveness Probe
-         * @description Returns 200 OK if the bridged process is alive.
+         * @description Returns `200 OK` if the `bridged` ingress daemon is running. Used by Kubernetes/Docker health checks.
          */
         get: operations["getHealthz"];
         put?: never;
@@ -33,7 +73,7 @@ export interface paths {
         };
         /**
          * Readiness Probe
-         * @description Returns 200 OK if bridged can communicate with upstream daemons.
+         * @description Returns `200 OK` if `bridged` can communicate with upstream gRPC daemons (`cored`, `sentineld`).
          */
         get: operations["getReadyz"];
         put?: never;
@@ -55,7 +95,7 @@ export interface paths {
         put?: never;
         /**
          * Operator Login
-         * @description Authenticates a human operator using username and masked PIN against sentineld (Argon2id), returning a cryptographically signed HMAC-SHA256 Session Token.
+         * @description Authenticates a human operator using username and PIN against sentineld (Argon2id), returning a cryptographically signed session token.
          */
         post: operations["authLogin"];
         delete?: never;
@@ -71,13 +111,17 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /**
+         * List Operator Accounts
+         * @description Retrieves a list of active and inactive operator accounts within the tenant.
+         */
+        get: operations["listOperators"];
         put?: never;
         /**
-         * Create Operator
-         * @description Provisions a new operator inside the tenant. Requires SUPERVISOR or ADMIN role.
+         * Provision New Operator
+         * @description Creates a new operator account within the tenant. Requires `ADMIN` or `SUPERVISOR` role.
          */
-        post: operations["authCreateOperator"];
+        post: operations["createOperator"];
         delete?: never;
         options?: never;
         head?: never;
@@ -98,10 +142,10 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * Update Operator Status
+         * Update Operator Account Status
          * @description Activates, deactivates, or locks out an operator account.
          */
-        patch: operations["authUpdateOperatorStatus"];
+        patch: operations["updateOperatorStatus"];
         trace?: never;
     };
     "/v1/auth/credentials/rotate": {
@@ -114,10 +158,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Rotate Credential (PIN)
-         * @description Securely rotates an operator PIN after verifying the current credential.
+         * Rotate Operator Credential (PIN)
+         * @description Securely changes an operator's PIN after verifying the current PIN.
          */
-        post: operations["authRotateCredential"];
+        post: operations["rotateCredential"];
         delete?: never;
         options?: never;
         head?: never;
@@ -132,10 +176,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * List Auth Audit Events
-         * @description Retrieves immutable audit trail logs from auth.auth_events.
+         * List Auth Audit Trail Events
+         * @description Retrieves immutable audit trail logs from `auth.auth_events`. Useful for compliance and supervisor reviews.
          */
-        get: operations["authListEvents"];
+        get: operations["listAuthEvents"];
         put?: never;
         post?: never;
         delete?: never;
@@ -154,10 +198,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Calculate Cart Totals
-         * @description Calculates subtotals, tax (IVA 13%), discounts, and total without committing transaction.
+         * Calculate Cart Subtotal, Taxes, and Discounts
+         * @description Performs pre-checkout calculations (subtotal, 13% IVA tax, discounts) without creating persistent transactions.
          */
-        post: operations["posCalculateCart"];
+        post: operations["calculateCart"];
         delete?: never;
         options?: never;
         head?: never;
@@ -174,10 +218,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Execute Retail Checkout
-         * @description Executes an atomic Super-Transaction in cored (< 8ms): validates perimetral quota, creates retail order, posts double-entry ledger entries (ΣD = ΣC), deducts Kardex inventory, and enqueues DTE event in outbox.events.
+         * Execute Retail POS Checkout (Super-Transaction)
+         * @description Executes an atomic Super-Transaction (< 8ms) in cored. Validates perimetral quota, creates retail order, posts double-entry ledger entries, deducts Kardex stock, and enqueues DTE event in outbox.
          */
-        post: operations["posCheckout"];
+        post: operations["checkout"];
         delete?: never;
         options?: never;
         head?: never;
@@ -194,10 +238,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Execute Retail Refund Reversal
-         * @description Executes an atomic refund reversal (ADR-0013): restocking Kardex (IN), contra-entry posting (Dr. 410103 Returns & Dr. 210501 IVA / Cr. 110101 Cash/Card), and pre-commit hook for DTE Nota de Crédito (05).
+         * Execute Retail Refund & Reversal
+         * @description Executes an atomic refund reversal (ADR-0013). Restocks Kardex inventory, posts contra-ledger entry, and prepares electronic Nota de Crédito (Tipo 05).
          */
-        post: operations["posRefund"];
+        post: operations["refund"];
         delete?: never;
         options?: never;
         head?: never;
@@ -212,10 +256,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get Inventory Stock
-         * @description Returns projected Kardex physical availability for a SKU across warehouses.
+         * Get Inventory Stock Availability
+         * @description Returns physical Kardex inventory availability for a specific SKU across warehouses.
          */
-        get: operations["inventoryGetStock"];
+        get: operations["getStock"];
         put?: never;
         post?: never;
         delete?: never;
@@ -234,10 +278,30 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Record Stock Movement
-         * @description Records an explicit Kardex inventory movement (IN, OUT, ADJUSTMENT, TRANSFER).
+         * Record Kardex Inventory Movement
+         * @description Records an explicit inventory movement (`IN`, `OUT`, `ADJUSTMENT`, `TRANSFER`) in Kardex.
          */
-        post: operations["inventoryRecordMovement"];
+        post: operations["recordMovement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ledger/accounts/{account_code}/balance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Account Balance
+         * @description Calculates live debit, credit, and net balance for a specific chart of accounts code.
+         */
+        get: operations["getAccountBalance"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -254,30 +318,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Post Journal Entry
-         * @description Direct posting to the double-entry general ledger. Strictly verifies ΣDebits == ΣCredits.
+         * Post Journal Entry to Double-Entry Ledger
+         * @description Posts a balanced journal entry directly to the general ledger. Strictly verifies $\sum \text{Debits} == \sum \text{Credits}$.
          */
-        post: operations["ledgerPostEntry"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/ledger/accounts/{account_code}/balance": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get Account Balance
-         * @description Calculates projected balance for a specific chart of accounts code.
-         */
-        get: operations["ledgerGetAccountBalance"];
-        put?: never;
-        post?: never;
+        post: operations["postEntry"];
         delete?: never;
         options?: never;
         head?: never;
@@ -288,154 +332,378 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description RFC 7807 Problem Details specification for structured API errors. */
         ProblemDetails: {
-            /** @example https://wearemobi.com/errors/invalid-argument */
-            type: string;
-            /** @example Bad Request */
+            /**
+             * @description URI reference identifying the error type.
+             * @example https://wearemobi.com/errors/invalid-argument
+             */
+            type?: string;
+            /**
+             * @description Short human-readable summary of the problem.
+             * @example Bad Request
+             */
             title: string;
-            /** @example 400 */
+            /**
+             * @description HTTP status code.
+             * @example 400
+             */
             status: number;
-            /** @example Cart contains invalid item price */
-            detail: string;
-            /** @example /v1/pos/checkout */
+            /**
+             * @description Human-readable explanation specific to this occurrence.
+             * @example Cart contains invalid item with non-positive price
+             */
+            detail?: string;
+            /**
+             * @description URI reference identifying the specific resource or endpoint.
+             * @example /v1/pos/checkout
+             */
             instance?: string;
+            /**
+             * @description M.O.B.I. internal machine-readable error code.
+             * @example INVALID_PRICE
+             */
+            code?: string;
         };
+        /** @description Operator authentication request payload. */
         LoginRequest: {
-            /** @example tenant-mobi-sas-sv */
+            /**
+             * @description Tenant identifier.
+             * @example tenant-mobi-sas-sv
+             */
             tenant_id: string;
-            /** @example caja */
+            /**
+             * @description Operator username.
+             * @example caja
+             */
             username: string;
-            /** @example 1234 */
+            /**
+             * @description Operator PIN secret.
+             * @example 1234
+             */
             pin: string;
         };
+        /** @description Operator authentication response containing session Bearer token. */
         LoginResponse: {
-            /** @example eyJhbGciOiJIUzI1Ni... */
+            /**
+             * @description Cryptographically signed Bearer session token.
+             * @example eyJhbGciOiJIUzI1Ni...
+             */
             token: string;
-            /** @example 1829301293012 */
+            /**
+             * @description Unique operator identifier.
+             * @example 1829301293012
+             */
             operator_id: string;
-            /** @example caja */
+            /**
+             * @description Operator username.
+             * @example caja
+             */
             username: string;
-            /** @example Cajero Principal */
+            /**
+             * @description Operator display name.
+             * @example Cajero Principal San Benito
+             */
             name: string;
             /**
+             * @description Assigned RBAC roles.
              * @example [
              *       "CASHIER"
              *     ]
              */
             roles: string[];
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description Session expiration ISO timestamp.
+             * @example 2026-09-05T20:00:00Z
+             */
             expires_at: string;
         };
+        /** @description Request payload for provisioning a new operator account. */
         CreateOperatorRequest: {
+            /**
+             * @description Unique username for the operator.
+             * @example nuevo_cajero
+             */
             username: string;
+            /**
+             * @description Full name of the operator.
+             * @example Juan Perez
+             */
             name: string;
+            /**
+             * @description Initial PIN assigned to the account.
+             * @example 5678
+             */
             initial_pin: string;
+            /**
+             * @description Initial roles.
+             * @example [
+             *       "CASHIER"
+             *     ]
+             */
             roles: string[];
         };
+        /** @description Operator account entity representation. */
         Operator: {
+            /** @example 1829301293099 */
             operator_id?: string;
+            /** @example nuevo_cajero */
             username?: string;
+            /** @example Juan Perez */
             name?: string;
+            /**
+             * @example [
+             *       "CASHIER"
+             *     ]
+             */
             roles?: string[];
-            status?: string;
-            /** Format: date-time */
+            /**
+             * @example ACTIVE
+             * @enum {string}
+             */
+            status?: "ACTIVE" | "INACTIVE" | "LOCKED";
+            /**
+             * Format: date-time
+             * @example 2026-09-05T12:00:00Z
+             */
             created_at?: string;
         };
+        /** @description Payload for rotating an operator PIN. */
         RotateCredentialRequest: {
+            /**
+             * @description Current PIN.
+             * @example 1234
+             */
             current_pin: string;
+            /**
+             * @description New PIN to set.
+             * @example 9876
+             */
             new_pin: string;
         };
+        /** @description Immutable security audit log event. */
         AuthEvent: {
+            /** @example evt_8f9a0b1c */
             id?: string;
+            /** @example LOGIN_SUCCESS */
             event_type?: string;
+            /** @example caja */
             username?: string;
+            /** @example 192.168.1.50 */
             ip_address?: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @example 2026-09-05T12:00:00Z
+             */
             created_at?: string;
         };
+        /** @description Cart items request for pre-checkout totals calculation. */
         CalculateCartRequest: {
             items: components["schemas"]["CartItem"][];
         };
+        /** @description Pre-checkout totals calculated in fixed-scale $10^{-4}$ units. */
         CalculateCartResponse: {
-            /** @description Amount in fixed-scale cents/10^-4 */
+            /**
+             * @description Subtotal in fixed-scale $10^{-4}$ integer units ($10.50 = 105000).
+             * @example 105000
+             */
             subtotal?: number;
+            /**
+             * @description 13% IVA tax in fixed-scale $10^{-4}$ integer units ($1.365 = 13650).
+             * @example 13650
+             */
             tax?: number;
+            /**
+             * @description Grand total in fixed-scale $10^{-4}$ integer units ($11.865 = 118650).
+             * @example 118650
+             */
             total?: number;
         };
+        /** @description Super-transaction checkout payload. */
         CheckoutRequest: {
-            /** @example ORD-20260905-001 */
+            /**
+             * @description POS order reference string.
+             * @example ORD-20260905-001
+             */
             order_number: string;
             /**
-             * @description 01 Factura, 03 CCF, 05 NC
+             * @description Electronic document type (`01` Factura, `03` CCF, `05` NC).
              * @example 01
              */
             document_type?: string;
+            /**
+             * @description Customer display name.
+             * @example Consumidor Final
+             */
             customer_name?: string;
+            /**
+             * @description Customer ID or tax document ID.
+             * @example CUST-WALKIN
+             */
             customer_id?: string;
             items: components["schemas"]["CartItem"][];
             payments: components["schemas"]["PaymentItem"][];
         };
+        /** @description Committed checkout transaction summary. */
         CheckoutResponse: {
+            /** @example 18239012390123 */
             order_id?: string;
+            /** @example 105 */
             folio_number?: string;
+            /** @example DTE-01-MOBI0001-000000000000105 */
             control_number?: string;
+            /**
+             * @description Total amount in fixed-scale $10^{-4}$ units.
+             * @example 118650
+             */
             total_amount?: number;
+            /** @example COMPLETED */
             status?: string;
         };
+        /** @description Refund and return reversal payload. */
         RefundRequest: {
+            /**
+             * @description ID of original order being refunded.
+             * @example 18239012390123
+             */
             original_order_id: string;
+            /**
+             * @description Reason for product return.
+             * @example DEFECTIVE_PRODUCT
+             */
             reason: string;
             items: components["schemas"]["CartItem"][];
         };
+        /** @description Processed refund summary and Nota de Crédito reference. */
         RefundResponse: {
+            /** @example 18239012399999 */
             refund_id?: string;
+            /** @example 106 */
             nota_credito_folio?: string;
+            /** @example REFUNDED */
             status?: string;
         };
+        /** @description Retail cart line item. */
         CartItem: {
+            /**
+             * @description Product SKU code.
+             * @example PROD-COFFEE-001
+             */
             sku: string;
+            /**
+             * @description Product description name.
+             * @example Café Especial Santa Bárbara 500g
+             */
             name: string;
+            /**
+             * @description Quantity in base units (e.g. 1 unit).
+             * @example 1
+             */
             quantity: number;
-            /** @description Stored in fixed scale 10^-4 */
+            /**
+             * @description Unit price in fixed-scale $10^{-4}$ integer units ($3.50 = 35000).
+             * @example 35000
+             */
             unit_price: number;
         };
+        /** @description Tendered payment line item. */
         PaymentItem: {
-            /** @example CASH */
+            /**
+             * @description Payment method (`CASH`, `CARD`, `TRANSFER`, `CRYPTO`).
+             * @example CASH
+             */
             method: string;
-            /** @description Stored in fixed scale 10^-4 */
+            /**
+             * @description Payment amount in fixed-scale $10^{-4}$ integer units.
+             * @example 50000
+             */
             amount: number;
         };
+        /** @description Inventory stock availability levels. */
         StockResponse: {
+            /** @example PROD-COFFEE-001 */
             sku?: string;
+            /**
+             * @description Total physical stock available across warehouses.
+             * @example 250
+             */
             total_available?: number;
+            /**
+             * @description Stock count per warehouse ID.
+             * @example {
+             *       "WH-SAN-BENITO": 150,
+             *       "WH-SANTA-ELENA": 100
+             *     }
+             */
             warehouses?: {
                 [key: string]: number;
             };
         };
+        /** @description Kardex inventory movement payload. */
         MovementRequest: {
+            /** @example PROD-COFFEE-001 */
             sku: string;
+            /** @example WH-SAN-BENITO */
             warehouse_id: string;
-            /** @enum {string} */
+            /**
+             * @example IN
+             * @enum {string}
+             */
             movement_type: "IN" | "OUT" | "ADJUSTMENT" | "TRANSFER";
+            /** @example 50 */
             quantity: number;
         };
+        /** @description Double-entry journal posting payload. Strictly verifies $\sum \text{Debits} == \sum \text{Credits}$. */
         PostEntryRequest: {
+            /**
+             * @description Journal entry memo/narration.
+             * @example Venta de contado POS-01 Factura 105
+             */
             description?: string;
-            lines: {
-                account_code: string;
-                debit: number;
-                credit: number;
-            }[];
+            lines: components["schemas"]["LedgerLine"][];
         };
+        /** @description Double-entry posting line item. */
+        LedgerLine: {
+            /**
+             * @description Chart of accounts code (e.g. 110101 Cash, 410101 Revenue).
+             * @example 110101
+             */
+            account_code: string;
+            /**
+             * @description Debit amount in fixed-scale $10^{-4}$ units.
+             * @example 118650
+             */
+            debit: number;
+            /**
+             * @description Credit amount in fixed-scale $10^{-4}$ units.
+             * @example 0
+             */
+            credit: number;
+        };
+        /** @description Chart of account live balance summary. */
         AccountBalanceResponse: {
+            /** @example 110101 */
             account_code?: string;
+            /**
+             * @description Total accumulated debits in fixed-scale $10^{-4}$ units.
+             * @example 15000000
+             */
             debit_total?: number;
+            /**
+             * @description Total accumulated credits in fixed-scale $10^{-4}$ units.
+             * @example 0
+             */
             credit_total?: number;
+            /**
+             * @description Net balance (Debits - Credits for Assets, Credits - Debits for Liabilities/Revenue).
+             * @example 15000000
+             */
             balance?: number;
         };
     };
     responses: {
-        /** @description Bad Request (RFC 7807) */
+        /** @description Bad Request (RFC 7807 Problem Details) */
         ProblemDetails400: {
             headers: {
                 [name: string]: unknown;
@@ -444,7 +712,7 @@ export interface components {
                 "application/problem+json": components["schemas"]["ProblemDetails"];
             };
         };
-        /** @description Unauthorized (RFC 7807) */
+        /** @description Unauthorized (RFC 7807 Problem Details) */
         ProblemDetails401: {
             headers: {
                 [name: string]: unknown;
@@ -453,7 +721,7 @@ export interface components {
                 "application/problem+json": components["schemas"]["ProblemDetails"];
             };
         };
-        /** @description Payment Required / Quota Exhausted (RFC 7807) */
+        /** @description Payment Required / Perimetral Quota Exhausted (RFC 7807 Problem Details) */
         ProblemDetails402: {
             headers: {
                 [name: string]: unknown;
@@ -462,7 +730,7 @@ export interface components {
                 "application/problem+json": components["schemas"]["ProblemDetails"];
             };
         };
-        /** @description Forbidden (RFC 7807) */
+        /** @description Forbidden / Insufficient Role (RFC 7807 Problem Details) */
         ProblemDetails403: {
             headers: {
                 [name: string]: unknown;
@@ -471,7 +739,7 @@ export interface components {
                 "application/problem+json": components["schemas"]["ProblemDetails"];
             };
         };
-        /** @description Resource Not Found (RFC 7807) */
+        /** @description Resource Not Found (RFC 7807 Problem Details) */
         ProblemDetails404: {
             headers: {
                 [name: string]: unknown;
@@ -480,7 +748,7 @@ export interface components {
                 "application/problem+json": components["schemas"]["ProblemDetails"];
             };
         };
-        /** @description Too Many Requests / PIN Lockout (RFC 7807) */
+        /** @description Too Many Requests / Rate Limit Lockout (RFC 7807 Problem Details) */
         ProblemDetails429: {
             headers: {
                 [name: string]: unknown;
@@ -491,15 +759,61 @@ export interface components {
         };
     };
     parameters: {
-        /** @description Sovereign multi-tenant identifier (e.g. tenant-mobi-sas-sv) */
+        /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
         XTenantId: string;
+        /** @description Unique UUID or string key preventing duplicate execution during network retries. */
+        IdempotencyKey: string;
     };
     requestBodies: never;
-    headers: never;
+    headers: {
+        /** @description Distributed tracing UUID for request tracking across daemons. */
+        XTraceId: string;
+    };
     pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getOpenAPISpec: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical OpenAPI 3.1 YAML document */
+            200: {
+                headers: {
+                    "X-Trace-Id": components["headers"]["XTraceId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/yaml": string;
+                };
+            };
+        };
+    };
+    getDocsUI: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description HTML Scalar viewer page */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/html": string;
+                };
+            };
+        };
+    };
     getHealthz: {
         parameters: {
             query?: never;
@@ -517,7 +831,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @example ok */
-                        status?: string;
+                        status: string;
                     };
                 };
             };
@@ -540,7 +854,7 @@ export interface operations {
                 content: {
                     "application/json": {
                         /** @example ready */
-                        status?: string;
+                        status: string;
                     };
                 };
             };
@@ -559,9 +873,10 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Successful authentication */
+            /** @description Authentication successful. Returns session token and operator details. */
             200: {
                 headers: {
+                    "X-Trace-Id": components["headers"]["XTraceId"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -573,11 +888,36 @@ export interface operations {
             429: components["responses"]["ProblemDetails429"];
         };
     };
-    authCreateOperator: {
+    listOperators: {
         parameters: {
             query?: never;
             header: {
-                /** @description Sovereign multi-tenant identifier (e.g. tenant-mobi-sas-sv) */
+                /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
+                "X-Tenant-Id": components["parameters"]["XTenantId"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of operators */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Operator"][];
+                };
+            };
+            401: components["responses"]["ProblemDetails401"];
+            403: components["responses"]["ProblemDetails403"];
+        };
+    };
+    createOperator: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
                 "X-Tenant-Id": components["parameters"]["XTenantId"];
             };
             path?: never;
@@ -589,7 +929,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Operator created successfully */
+            /** @description Operator account provisioned */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -603,14 +943,15 @@ export interface operations {
             403: components["responses"]["ProblemDetails403"];
         };
     };
-    authUpdateOperatorStatus: {
+    updateOperatorStatus: {
         parameters: {
             query?: never;
             header: {
-                /** @description Sovereign multi-tenant identifier (e.g. tenant-mobi-sas-sv) */
+                /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
                 "X-Tenant-Id": components["parameters"]["XTenantId"];
             };
             path: {
+                /** @description Numeric operator ID */
                 id: number;
             };
             cookie?: never;
@@ -618,13 +959,16 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @enum {string} */
+                    /**
+                     * @example ACTIVE
+                     * @enum {string}
+                     */
                     status: "ACTIVE" | "INACTIVE" | "LOCKED";
                 };
             };
         };
         responses: {
-            /** @description Status updated */
+            /** @description Status updated successfully */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -636,11 +980,11 @@ export interface operations {
             403: components["responses"]["ProblemDetails403"];
         };
     };
-    authRotateCredential: {
+    rotateCredential: {
         parameters: {
             query?: never;
             header: {
-                /** @description Sovereign multi-tenant identifier (e.g. tenant-mobi-sas-sv) */
+                /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
                 "X-Tenant-Id": components["parameters"]["XTenantId"];
             };
             path?: never;
@@ -652,7 +996,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Credential rotated */
+            /** @description Credential rotated successfully */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -663,13 +1007,14 @@ export interface operations {
             401: components["responses"]["ProblemDetails401"];
         };
     };
-    authListEvents: {
+    listAuthEvents: {
         parameters: {
             query?: {
+                /** @description Number of audit events to return (max 100) */
                 limit?: number;
             };
             header: {
-                /** @description Sovereign multi-tenant identifier (e.g. tenant-mobi-sas-sv) */
+                /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
                 "X-Tenant-Id": components["parameters"]["XTenantId"];
             };
             path?: never;
@@ -677,7 +1022,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description List of audit events */
+            /** @description Array of audit trail events */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -689,11 +1034,11 @@ export interface operations {
             401: components["responses"]["ProblemDetails401"];
         };
     };
-    posCalculateCart: {
+    calculateCart: {
         parameters: {
             query?: never;
             header: {
-                /** @description Sovereign multi-tenant identifier (e.g. tenant-mobi-sas-sv) */
+                /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
                 "X-Tenant-Id": components["parameters"]["XTenantId"];
             };
             path?: never;
@@ -705,7 +1050,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Calculated cart */
+            /** @description Calculated cart summary */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -717,12 +1062,14 @@ export interface operations {
             400: components["responses"]["ProblemDetails400"];
         };
     };
-    posCheckout: {
+    checkout: {
         parameters: {
             query?: never;
             header: {
-                /** @description Sovereign multi-tenant identifier (e.g. tenant-mobi-sas-sv) */
+                /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
                 "X-Tenant-Id": components["parameters"]["XTenantId"];
+                /** @description Unique UUID or string key preventing duplicate execution during network retries. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
             path?: never;
             cookie?: never;
@@ -733,7 +1080,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Checkout successful */
+            /** @description Checkout successful and order committed */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -747,12 +1094,14 @@ export interface operations {
             402: components["responses"]["ProblemDetails402"];
         };
     };
-    posRefund: {
+    refund: {
         parameters: {
             query?: never;
             header: {
-                /** @description Sovereign multi-tenant identifier (e.g. tenant-mobi-sas-sv) */
+                /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
                 "X-Tenant-Id": components["parameters"]["XTenantId"];
+                /** @description Unique UUID or string key preventing duplicate execution during network retries. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
             path?: never;
             cookie?: never;
@@ -763,7 +1112,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Refund processed */
+            /** @description Refund processed successfully */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -776,21 +1125,22 @@ export interface operations {
             401: components["responses"]["ProblemDetails401"];
         };
     };
-    inventoryGetStock: {
+    getStock: {
         parameters: {
             query?: never;
             header: {
-                /** @description Sovereign multi-tenant identifier (e.g. tenant-mobi-sas-sv) */
+                /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
                 "X-Tenant-Id": components["parameters"]["XTenantId"];
             };
             path: {
+                /** @description Unique product SKU code */
                 sku: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Stock information */
+            /** @description Stock level details */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -802,11 +1152,11 @@ export interface operations {
             404: components["responses"]["ProblemDetails404"];
         };
     };
-    inventoryRecordMovement: {
+    recordMovement: {
         parameters: {
             query?: never;
             header: {
-                /** @description Sovereign multi-tenant identifier (e.g. tenant-mobi-sas-sv) */
+                /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
                 "X-Tenant-Id": components["parameters"]["XTenantId"];
             };
             path?: never;
@@ -818,7 +1168,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Movement recorded successfully */
+            /** @description Movement recorded in Kardex log */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -826,14 +1176,44 @@ export interface operations {
                 content?: never;
             };
             400: components["responses"]["ProblemDetails400"];
+            401: components["responses"]["ProblemDetails401"];
         };
     };
-    ledgerPostEntry: {
+    getAccountBalance: {
         parameters: {
             query?: never;
             header: {
-                /** @description Sovereign multi-tenant identifier (e.g. tenant-mobi-sas-sv) */
+                /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
                 "X-Tenant-Id": components["parameters"]["XTenantId"];
+            };
+            path: {
+                /** @description Accounting chart code (e.g. 110101 for Cash, 410101 for Revenue) */
+                account_code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Account balance summary */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountBalanceResponse"];
+                };
+            };
+            404: components["responses"]["ProblemDetails404"];
+        };
+    };
+    postEntry: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Sovereign multi-tenant identifier (e.g., `tenant-mobi-sas-sv` or `tenant_cr_san_jose`). */
+                "X-Tenant-Id": components["parameters"]["XTenantId"];
+                /** @description Unique UUID or string key preventing duplicate execution during network retries. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
             };
             path?: never;
             cookie?: never;
@@ -844,7 +1224,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Entry posted */
+            /** @description Journal entry posted */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -852,32 +1232,7 @@ export interface operations {
                 content?: never;
             };
             400: components["responses"]["ProblemDetails400"];
-        };
-    };
-    ledgerGetAccountBalance: {
-        parameters: {
-            query?: never;
-            header: {
-                /** @description Sovereign multi-tenant identifier (e.g. tenant-mobi-sas-sv) */
-                "X-Tenant-Id": components["parameters"]["XTenantId"];
-            };
-            path: {
-                account_code: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Account balance */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["AccountBalanceResponse"];
-                };
-            };
-            404: components["responses"]["ProblemDetails404"];
+            401: components["responses"]["ProblemDetails401"];
         };
     };
 }
