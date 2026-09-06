@@ -1,11 +1,9 @@
 name: Publish Package
 
 on:
-  release:
-    types: [created]
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
 
 jobs:
   publish:
@@ -27,8 +25,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Verify Quality Shield
+        run: |
+          npm run typecheck
+          npm run test
+          npm run build
 
       - name: Publish to GitHub Packages
         run: npm publish
